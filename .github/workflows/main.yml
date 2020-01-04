@@ -1,0 +1,31 @@
+---
+name: Molecule Image Build
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        image:
+          - name: debian
+            tag: buster
+          - name: debian
+            tag: stretch
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt install docker
+      - name: build images
+        run: docker build --build-arg IMAGE=${{ matrix.image.name }} --build-arg TAG=${{ matrix.image.tag }} .
+#      - name: publish docker
+#        uses: elgohr/Publish-Docker-Github-Action@2.11
+
+

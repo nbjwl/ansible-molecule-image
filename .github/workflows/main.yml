@@ -24,8 +24,14 @@ jobs:
         run: |
           sudo apt install docker
       - name: build images
-        run: docker build --build-arg IMAGE=${{ matrix.image.name }} --build-arg TAG=${{ matrix.image.tag }} .
-#      - name: publish docker
-#        uses: elgohr/Publish-Docker-Github-Action@2.11
+        run: docker build --build-arg IMAGE=${{ matrix.image.name }} --build-arg TAG=${{ matrix.image.tag }} -t nbjwl/molecule:${{ matrix.image.name }}.${{ matrix.image.tag }}  .
+      - name: publish
+        if: github.event_name == 'push' and github.ref == 'master'
+        run:
+          - docker login -u ${{ secrets.DOCKER_USER_NAME }} -p ${{ secrets.DOCKER_USER_PASSWORD }}
+          - docker push nbjwl/molecule:${{ matrix.image.name }}.${{ matrix.image.tag }}
+
+
+
 
 

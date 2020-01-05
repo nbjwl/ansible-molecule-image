@@ -1,12 +1,6 @@
 ---
 name: Molecule Image Build
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,13 +12,25 @@ jobs:
             tag: buster
           - name: debian
             tag: stretch
+          - name: centos
+            tag: 8
+          - name: centos
+            tag: 7
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1.1.1
+        with:
+          python-version: 3.7
       - name: Install dependencies
         run: |
           sudo apt install docker
+          python -m pip install --upgrade pip
+          pip install pytest testinfra
       - name: build images
-        run: docker build --build-arg IMAGE=${{ matrix.image.name }} --build-arg TAG=${{ matrix.image.tag }} -t nbjwl/molecule:${{ matrix.image.name }}.${{ matrix.image.tag }}  .
+        run: docker build -f ${{ matrix.image.name }}.Dockerfile --build-arg IMAGE=${{ matrix.image.name }} --build-arg TAG=${{ matrix.image.tag }} -t nbjwl/molecule:${{ matrix.image.name }}.${{ matrix.image.tag }}  .
+      - name: run test
+        run: py.test --image=${{ matrix.image.name }} --tag=${{ matrix.image.tag }} tests/testimage.py
       - name: publish
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
